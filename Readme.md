@@ -35,7 +35,7 @@ Scan Pipeline:
 
 ```bash
 # Clone repository
-git clone <your-repo>
+git clone <https://github.com/mikky00B/My-Token-Approval-Scanner-Revoke>
 cd wallet_scanner
 
 # Create virtual environment
@@ -263,26 +263,6 @@ ETHERSCAN_API_KEY=your-etherscan-key
 DJANGO_ENV=local  # local | production
 ```
 
-## Deployment Considerations
-
-### Production Checklist
-
-- [ ] Set `DEBUG=False` in production settings
-- [ ] Use PostgreSQL instead of SQLite
-- [ ] Set up proper Redis with persistence
-- [ ] Use environment-specific API keys
-- [ ] Set up monitoring (Sentry, etc.)
-- [ ] Configure CORS for frontend
-- [ ] Set up SSL/TLS
-- [ ] Rate limit API endpoints
-- [ ] Set up log aggregation
-
-## Roadmap
-
-### Phase 2: Smart Contract Integration
-- Deploy Vyper inspection contract
-- Reduce dependency on Etherscan
-- Add on-chain allowance verification
 
 
 ## Contributing
@@ -291,11 +271,10 @@ This is a portfolio project. Feel free to fork and adapt for your use case.
 
 ## License
 
-MIT
 
 ## Contact
 
-Your Name - clevermike02@gmail.com
+clevermike02@gmail.com
 
 ---
 
