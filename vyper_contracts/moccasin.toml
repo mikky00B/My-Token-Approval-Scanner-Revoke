@@ -1,0 +1,24 @@
+[project]
+name = "wallet_scanner_contracts"
+version = "0.1.0"
+src = "src"
+
+[networks.mainnet]
+chain_id = 1
+is_fork = false
+default_account_name = "default"
+save_to_db = false
+
+[networks.sepolia]
+chain_id = 11155111
+is_fork = false
+default_account_name = "default"
+save_to_db = false
+
+[networks.local]
+chain_id = 1337
+is_fork = false
+default_account_name = "default"
+
+[extra_data]
+# Add any extra configuration here

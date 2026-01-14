@@ -1,0 +1,88 @@
+{% extends 'frontend/base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Scan History</h1>
+            <p class="mt-2 text-sm text-gray-600">Recent wallet scans</p>
+        </div>
+
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <ul role="list" class="divide-y divide-gray-200">
+                {% for scan in scans %}
+                <li>
+                    <a href="{% url 'frontend:scan_detail' scan.id %}" class="block hover:bg-gray-50 transition-colors">
+                        <div class="px-4 py-4 sm:px-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center min-w-0 flex-1">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-10 w-10 rounded-full
+                                            {% if scan.risk_level == 'LOW' %}bg-green-100
+                                            {% elif scan.risk_level == 'MEDIUM' %}bg-yellow-100
+                                            {% elif scan.risk_level == 'HIGH' %}bg-orange-100
+                                            {% else %}bg-red-100{% endif %}
+                                            flex items-center justify-center">
+                                            <svg class="h-6 w-6
+                                                {% if scan.risk_level == 'LOW' %}text-green-600
+                                                {% elif scan.risk_level == 'MEDIUM' %}text-yellow-600
+                                                {% elif scan.risk_level == 'HIGH' %}text-orange-600
+                                                {% else %}text-red-600{% endif %}"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0 flex-1 px-4">
+                                        <div class="flex items-center space-x-3">
+                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                {{ scan.wallet.address }}
+                                            </p>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                {% if scan.risk_level == 'LOW' %}bg-green-100 text-green-800
+                                                {% elif scan.risk_level == 'MEDIUM' %}bg-yellow-100 text-yellow-800
+                                                {% elif scan.risk_level == 'HIGH' %}bg-orange-100 text-orange-800
+                                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                                {{ scan.risk_level }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                                            <span class="flex items-center">
+                                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                {{ scan.started_at|timesince }} ago
+                                            </span>
+                                            <span>{{ scan.total_approvals }} approvals</span>
+                                            <span>Score: {{ scan.total_risk_score }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                {% empty %}
+                <li class="px-4 py-12 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No scans yet</h3>
+                    <p class="mt-1 text-sm text-gray-500">Get started by scanning a wallet.</p>
+                    <div class="mt-6">
+                        <a href="{% url 'frontend:home' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                            Scan a Wallet
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

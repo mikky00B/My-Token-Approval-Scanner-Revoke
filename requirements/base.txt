@@ -1,0 +1,14 @@
+Django==5.0.1
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+
+# Web3
+web3==6.15.1
+eth-utils==2.3.1
+
+# Async tasks (Week 2)
+# celery==5.3.4
+# redis==5.0.1
+
+# Environment
+python-decouple==3.8

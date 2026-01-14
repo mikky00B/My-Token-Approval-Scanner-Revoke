@@ -1,0 +1,260 @@
+{% extends 'frontend/base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="{% url 'frontend:home' %}" class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Scanner
+            </a>
+        </div>
+
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div class="px-6 py-8 {% if scan.risk_level == 'LOW' %}bg-gradient-to-r from-green-50 to-emerald-50{% elif scan.risk_level == 'MEDIUM' %}bg-gradient-to-r from-yellow-50 to-orange-50{% elif scan.risk_level == 'HIGH' %}bg-gradient-to-r from-orange-50 to-red-50{% else %}bg-gradient-to-r from-red-50 to-pink-50{% endif %}">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h1 class="text-3xl font-bold text-gray-900">Scan Details</h1>
+                        <div class="mt-2 flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Wallet:</span>
+                            <code class="text-sm bg-white px-3 py-1 rounded-lg text-gray-800 font-mono">{{ scan.wallet.address }}</code>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-600">
+                            Scanned {{ scan.started_at|timesince }} ago
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex items-center px-6 py-3 rounded-full text-lg font-bold
+                            {% if scan.risk_level == 'LOW' %}bg-green-100 text-green-800
+                            {% elif scan.risk_level == 'MEDIUM' %}bg-yellow-100 text-yellow-800
+                            {% elif scan.risk_level == 'HIGH' %}bg-orange-100 text-orange-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if scan.risk_level == 'LOW' %}
+                                <svg class="mr-2 h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            {% else %}
+                                <svg class="mr-2 h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                            {% endif %}
+                            {{ scan.risk_level }} RISK
+                        </span>
+                        <div class="mt-2 text-sm text-gray-600">
+                            Scan ID: #{{ scan.id }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-px bg-gray-200 sm:grid-cols-5">
+                <div class="bg-white px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Total Approvals</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ scan.total_approvals }}</dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Risk Score</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ scan.total_risk_score }}</dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">High Risk</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-orange-600">{{ scan.high_risk_count }}</dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Critical</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-red-600">{{ scan.critical_risk_count }}</dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Duration</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-gray-900">
+                        {% if scan.duration_seconds %}
+                            {{ scan.duration_seconds|floatformat:1 }}s
+                        {% else %}
+                            -
+                        {% endif %}
+                    </dd>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6" x-data="{ filter: 'all' }">
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium text-gray-700">Filter by risk:</span>
+                <button @click="filter = 'all'" 
+                        :class="filter === 'all' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700'"
+                        class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                    All ({{ approvals|length }})
+                </button>
+                <button @click="filter = 'CRITICAL'" 
+                        :class="filter === 'CRITICAL' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'"
+                        class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                    Critical ({{ scan.critical_risk_count }})
+                </button>
+                <button @click="filter = 'HIGH'" 
+                        :class="filter === 'HIGH' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'"
+                        class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                    High ({{ scan.high_risk_count }})
+                </button>
+                <button @click="filter = 'MEDIUM'" 
+                        :class="filter === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'"
+                        class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                    Medium
+                </button>
+                <button @click="filter = 'LOW'" 
+                        :class="filter === 'LOW' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'"
+                        class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                    Low
+                </button>
+            </div>
+        </div>
+
+        <!-- Approvals List -->
+        {% if approvals %}
+        <div class="space-y-4" x-data="{ filter: 'all' }">
+            {% for approval in approvals %}
+            <div x-show="filter === 'all' || filter === '{{ approval.risk_level }}'"
+                 class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow
+                 {% if approval.risk_level == 'CRITICAL' %}border-l-4 border-l-red-500
+                 {% elif approval.risk_level == 'HIGH' %}border-l-4 border-l-orange-500
+                 {% elif approval.risk_level == 'MEDIUM' %}border-l-4 border-l-yellow-500
+                 {% else %}border-l-4 border-l-green-500{% endif %}">
+                
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 min-w-0">
+                            <!-- Badges -->
+                            <div class="flex items-center flex-wrap gap-2 mb-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                    {{ approval.token_type }}
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold
+                                    {% if approval.risk_level == 'LOW' %}bg-green-100 text-green-800
+                                    {% elif approval.risk_level == 'MEDIUM' %}bg-yellow-100 text-yellow-800
+                                    {% elif approval.risk_level == 'HIGH' %}bg-orange-100 text-orange-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ approval.risk_level }} RISK
+                                </span>
+                                {% if approval.is_unlimited %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-100 text-red-800">
+                                    <svg class="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    UNLIMITED
+                                </span>
+                                {% endif %}
+                                {% if approval.is_operator %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-purple-100 text-purple-800">
+                                    OPERATOR
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Addresses -->
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Token Contract</div>
+                                    <div class="flex items-center space-x-2">
+                                        <code class="text-sm bg-gray-50 px-3 py-2 rounded-lg text-gray-800 font-mono flex-1">{{ approval.token_address }}</code>
+                                        <a href="https://etherscan.io/address/{{ approval.token_address }}" 
+                                           target="_blank"
+                                           class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Spender Contract</div>
+                                    <div class="flex items-center space-x-2">
+                                        <code class="text-sm bg-gray-50 px-3 py-2 rounded-lg text-gray-800 font-mono flex-1">{{ approval.spender_address }}</code>
+                                        <a href="https://etherscan.io/address/{{ approval.spender_address }}" 
+                                           target="_blank"
+                                           class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {% if approval.approved_amount %}
+                                <div>
+                                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Approved Amount</div>
+                                    <code class="text-sm bg-gray-50 px-3 py-2 rounded-lg text-gray-800 font-mono">{{ approval.approved_amount }}</code>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Risk Reasons -->
+                            {% if approval.risk_reasons %}
+                            <div class="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-orange-900 mb-2">⚠️ Risk Factors:</h4>
+                                <ul class="space-y-2">
+                                    {% for reason in approval.risk_reasons %}
+                                    <li class="flex items-start text-sm text-orange-800">
+                                        <svg class="h-5 w-5 text-orange-500 mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <span>{{ reason }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <!-- Transaction Info -->
+                            {% if approval.transaction_hash %}
+                            <div class="mt-4 text-xs text-gray-500">
+                                <span>Block: {{ approval.block_number }}</span>
+                                <span class="mx-2">•</span>
+                                <a href="https://etherscan.io/tx/{{ approval.transaction_hash }}" 
+                                   target="_blank"
+                                   class="text-indigo-600 hover:text-indigo-500">
+                                    View Transaction →
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Risk Score Badge -->
+                        <div class="ml-6 flex-shrink-0 text-center">
+                            <div class="inline-flex items-center justify-center h-16 w-16 rounded-full
+                                {% if approval.risk_level == 'LOW' %}bg-green-100
+                                {% elif approval.risk_level == 'MEDIUM' %}bg-yellow-100
+                                {% elif approval.risk_level == 'HIGH' %}bg-orange-100
+                                {% else %}bg-red-100{% endif %}">
+                                <span class="text-2xl font-bold
+                                    {% if approval.risk_level == 'LOW' %}text-green-700
+                                    {% elif approval.risk_level == 'MEDIUM' %}text-yellow-700
+                                    {% elif approval.risk_level == 'HIGH' %}text-orange-700
+                                    {% else %}text-red-700{% endif %}">
+                                    {{ approval.risk_points }}
+                                </span>
+                            </div>
+                            <div class="mt-1 text-xs text-gray-500">points</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <svg class="mx-auto h-16 w-16 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">No Approvals Found</h3>
+            <p class="mt-2 text-sm text-gray-500">This wallet has no token approvals. That's great for security!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
